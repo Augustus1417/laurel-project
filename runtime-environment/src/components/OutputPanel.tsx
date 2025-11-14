@@ -18,19 +18,18 @@ interface OutputPanelProps {
 const OutputPanel: React.FC<OutputPanelProps> = ({
   output,
   awaitingInput,
-  isRunning,
   isError,
   inputState,
   inputValue = "",
   setInputValue = () => {},
   onSubmitInput = () => {},
 }) => {
-  const getCharacterSprite = () => {
-    if (isError) return errorImg;
-    if (awaitingInput) return inputImg;
-    if (isRunning && output) return outputImg;
-    return idleImg;
-  };
+const getCharacterSprite = () => {
+  if (isError) return errorImg;
+  if (awaitingInput) return inputImg;
+  if (output && !isError && !awaitingInput) return outputImg;
+  return idleImg;
+};
 
   return (
     <div className="flex-1 p-3 bg-gray-900 flex flex-col relative overflow-hidden">
@@ -68,22 +67,25 @@ const OutputPanel: React.FC<OutputPanelProps> = ({
           </form>
         )}
 
-        {/* Speech bubble */}
-        <div className="relative bg-gray-800 text-gray-100 px-6 py-5 rounded-2xl max-w-[90%] break-words shadow-xl z-20 mb-4">
-          <div className="absolute -bottom-3 left-24 w-6 h-6 bg-gray-800 rotate-45" />
+{/* Speech bubble (hidden on error) */}
+{!isError && (
+  <div className="relative bg-gray-800 text-gray-100 px-6 py-5 rounded-2xl max-w-[90%] break-words shadow-xl z-20 mb-4">
+    {/* Bubble tail — always centered */}
+    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-gray-800 rotate-45" />
 
-          {isError ? (
-            <span className="text-red-400 font-semibold text-lg">{output}</span>
-          ) : awaitingInput && inputState ? (
-            <div className="flex flex-col gap-2">
-              <span className="text-yellow-300 font-semibold">{inputState.prompt}</span>
-            </div>
-          ) : output ? (
-            <span className="text-lg">{output}</span>
-          ) : (
-            <span className="text-gray-500 italic text-lg">No output yet</span>
-          )}
-        </div>
+    {/* Bubble content */}
+    {awaitingInput && inputState ? (
+      <div className="flex flex-col gap-2">
+        <span className="text-yellow-300 font-semibold">{inputState.prompt}</span>
+      </div>
+    ) : output ? (
+      <span className="text-lg">{output}</span>
+    ) : (
+      <span className="text-gray-500 italic text-lg">No output yet</span>
+    )}
+  </div>
+)}
+
         {/* Character at bottom */}
         <img
           src={getCharacterSprite()}
