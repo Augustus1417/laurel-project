@@ -1,0 +1,22 @@
+# function taking one parameter
+fun greet(name)
+  say("Hello", name)
+end
+
+# function taking two parameters and returning a value
+fun add(a, b)
+  return a + b
+end
+
+# function using three parameters inside a loop
+fun repeat_say(word, count, suffix)
+  for i = 0 to count step 1 then
+    say(word, suffix, i)
+  end
+end
+
+greet("Alice")
+sum = add(5, 7)
+say("5 + 7 =", sum)
+repeat_say("ping", 3, "#")
+

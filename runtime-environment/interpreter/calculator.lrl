@@ -1,0 +1,13 @@
+num1 = get_int("Enter first number: ")
+num2 = get_int("Enter second number: ")
+operation = get_string("Enter operation (+, -, *, /): ")
+
+if operation == "+" then
+  say(num1 + num2)
+else if operation == "-" then
+  say(num1 - num2)
+else if operation == "*" then
+  say(num1 * num2)
+else if operation == "/" then
+  say(num1 / num2)
+end

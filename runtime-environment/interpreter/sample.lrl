@@ -1,0 +1,47 @@
+# variables
+num1 = 1
+num2 = 2
+name = "John"
+
+# print statement
+say("Hello World")
+say(name)
+say(num1 + num2)
+
+# conditional statement
+if num1 != 2 then
+  say("num is not 2")
+end
+
+# conditional statement (multiple conditions)
+if num1 is 1 then
+  say("Hello", name)
+else if num == 2 then
+  say("Goodbye", name)
+else if num > 3 then
+  say("Good day", name)
+end
+
+# iteration
+for i = 0 to 10 then
+  say(i)
+end
+
+# input statement
+num = get_int("Enter number: ")
+float = get_float("Enter float: ")
+word = get_string("Enter word: ")
+
+# function
+fun sample_function()
+  say("This is a function")
+  return "done"
+end
+
+# function with parameters
+fun add(num1, num2)
+  say(num1 + num2)
+end
+
+say(sample_function())
+add(1, 2)
