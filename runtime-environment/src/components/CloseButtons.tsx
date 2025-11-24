@@ -1,34 +1,35 @@
 const CloseButtons = () => {
   return (
-    <div className="float-right h-full flex leading-[30px] dark:bg-main-dark no-drag gap-1">
+    <div className="flex items-center h-full gap-2 no-drag">
+      {/* MINIMIZE */}
       <button
         onClick={() => window?.electron?.minimize()}
-        className="tileStyleButton"
+        className="w-8 h-8 flex items-center justify-center rounded-md tileStyleButton"
       >
         <svg
           stroke="currentColor"
           fill="currentColor"
           strokeWidth="0"
           viewBox="0 0 16 16"
-          height="1em"
-          width="1em"
-          xmlns="http://www.w3.org/2000/svg"
+          height="14"
+          width="14"
         >
           <path d="M15 8H1V7h14v1z"></path>
         </svg>
       </button>
+
+      {/* MAXIMIZE */}
       <button
         onClick={() => window?.electron?.maximize()}
-        className="tileStyleButton"
+        className="w-8 h-8 flex items-center justify-center rounded-md tileStyleButton"
       >
         <svg
           stroke="currentColor"
           fill="currentColor"
           strokeWidth="0"
           viewBox="0 0 16 16"
-          height="1em"
-          width="1em"
-          xmlns="http://www.w3.org/2000/svg"
+          height="14"
+          width="14"
         >
           <path
             fillRule="evenodd"
@@ -37,11 +38,14 @@ const CloseButtons = () => {
           ></path>
         </svg>
       </button>
+
+      {/* CLOSE */}
       <button
         onClick={() => window?.electron?.close()}
-        className="tileStyleButton hover:bg-[#ff0000dd] dark:hover:bg-[#ff0000dd] hover:text-white"
+        className="w-8 h-8 flex items-center justify-center rounded-md tileStyleButton 
+                   hover:bg-red-600 hover:text-white"
       >
-        <span className="text-2xl font-extralight mb-1.5">&times;</span>
+        <span className="text-lg leading-none">&times;</span>
       </button>
     </div>
   );

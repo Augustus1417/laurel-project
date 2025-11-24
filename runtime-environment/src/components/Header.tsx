@@ -9,7 +9,13 @@ interface HeaderProps {
   setCurrentFilePath: (path: string | null) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ code, onChangeCode, setConsoleLog, currentFilePath, setCurrentFilePath }) => {
+const Header: React.FC<HeaderProps> = ({
+  code,
+  onChangeCode,
+  setConsoleLog,
+  currentFilePath,
+  setCurrentFilePath,
+}) => {
   const header = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -43,12 +49,14 @@ const Header: React.FC<HeaderProps> = ({ code, onChangeCode, setConsoleLog, curr
     try {
       let res;
       if (currentFilePath) {
-        // overwrite last-opened file without prompting
-        res = await (window.api as any).saveFile?.({ content: code, defaultPath: currentFilePath });
+        res = await (window.api as any).saveFile?.({
+          content: code,
+          defaultPath: currentFilePath,
+        });
       } else {
-        // no known path — behave like Save As
         res = await (window.api as any).saveFile?.({ content: code });
       }
+
       if (res && !res.canceled && res.filePath) {
         setCurrentFilePath(res.filePath);
         setConsoleLog(`Saved ${res.filePath}`);
@@ -73,28 +81,46 @@ const Header: React.FC<HeaderProps> = ({ code, onChangeCode, setConsoleLog, curr
       setConsoleLog("Failed to Save As file");
     }
   };
+return (
+  <nav
+    ref={header}
+    className="h-10 dark:bg-main-dark bg-[#2c2c2c] z-10 drag px-3 border-b border-black/20 dark:border-white/10"
+  >
+    <div className="flex items-center justify-between h-full">
 
-  return (
-    <nav ref={header} className="h-9 dark:bg-main-dark bg-[#f7f7f7] z-10 drag p-1">
-      <div className="flex items-center justify-between h-full px-2">
-        <div className="flex items-center gap-2 no-drag">
-          <button onClick={handleOpen} className="tileStyleButton no-drag" title="Open .lrl file">
-            Open
-          </button>
-          <button onClick={handleSave} className="tileStyleButton no-drag" title="Save .lrl file">
-            Save
-          </button>
-          <button onClick={handleSaveAs} className="tileStyleButton no-drag" title="Save As .lrl file">
-            Save As
-          </button>
-        </div>
+      {/* LEFT BUTTONS */}
+      <div className="flex items-center gap-2 no-drag">
+        <button
+          onClick={handleOpen}
+          className="px-3 py-1 rounded-md bg-gray-700 hover:bg-gray-600 text-white border border-white/10 text-sm"
+        >
+          Open
+        </button>
 
-        <div className="no-drag">
-          {window.electron && <CloseButtons />}
-        </div>
+        <button
+          onClick={handleSave}
+          className="px-3 py-1 rounded-md bg-gray-700 hover:bg-gray-600 text-white border border-white/10 text-sm"
+        >
+          Save
+        </button>
+
+        <button
+          onClick={handleSaveAs}
+          className="px-3 py-1 rounded-md bg-gray-700 hover:bg-gray-600 text-white border border-white/10 text-sm"
+        >
+          Save As
+        </button>
       </div>
-    </nav>
-  );
+
+      {/* RIGHT WINDOW BUTTONS */}
+      <div className="no-drag flex items-center pr-2 [>&_*]:mx-1">
+        {window.electron && <CloseButtons />}
+      </div>
+
+    </div>
+  </nav>
+);
+
 };
 
 export default Header;
