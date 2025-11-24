@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import LineNumbers from "./LineNumbers";
 
 interface EditorProps {
@@ -9,6 +9,8 @@ interface EditorProps {
 const Editor: React.FC<EditorProps> = ({ value, onChange }) => {
   const lines = value.split("\n");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragCounter = useRef(0);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Tab") {
@@ -43,10 +45,32 @@ const Editor: React.FC<EditorProps> = ({ value, onChange }) => {
       };
       reader.readAsText(file);
     }
+    // reset drag state
+    dragCounter.current = 0;
+    setIsDragging(false);
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
+  };
+
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    dragCounter.current += 1;
+    // only show indicator for files
+    const types = Array.from(e.dataTransfer.types || []);
+    if (types.includes("Files") || (e.dataTransfer.items && e.dataTransfer.items.length > 0)) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    dragCounter.current -= 1;
+    if (dragCounter.current <= 0) {
+      dragCounter.current = 0;
+      setIsDragging(false);
+    }
   };
 
   return (
@@ -54,6 +78,8 @@ const Editor: React.FC<EditorProps> = ({ value, onChange }) => {
       className="flex flex-col h-full p-3 border-r border-gray-700"
       onDrop={handleDrop}
       onDragOver={handleDragOver}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
     >
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-xl font-semibold text-gray-300 uppercase tracking-wide">
@@ -61,7 +87,7 @@ const Editor: React.FC<EditorProps> = ({ value, onChange }) => {
         </h3>
         <span className="text-xl text-gray-500">Laurel</span>
       </div>
-      <div className="flex-1 flex border border-gray-700 rounded-md overflow-hidden bg-gray-900">
+      <div className={`flex-1 flex border border-gray-700 rounded-md overflow-hidden bg-gray-900 relative ${isDragging ? 'opacity-60' : ''}`}>
         <LineNumbers lineCount={lines.length} />
         <textarea
           ref={textareaRef}
@@ -74,6 +100,11 @@ const Editor: React.FC<EditorProps> = ({ value, onChange }) => {
           style={{ lineHeight: "24px" }}
           spellCheck={false}
         />
+        {isDragging && (
+          <div className="absolute inset-0 bg-gray-800 bg-opacity-70 flex items-center justify-center pointer-events-none">
+            <div className="text-6xl text-white">+</div>
+          </div>
+        )}
       </div>
     </div>
   );
