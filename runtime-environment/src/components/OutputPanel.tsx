@@ -81,7 +81,7 @@ const getCharacterSprite = () => {
     ) : output ? (
       <span className="text-lg">{output}</span>
     ) : (
-      <span className="text-gray-500 italic text-lg">No output yet</span>
+      <span className="text-gray-500 italic text-lg">Lets get coding!</span>
     )}
   </div>
 )}
