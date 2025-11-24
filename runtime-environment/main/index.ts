@@ -1,4 +1,5 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, dialog } from "electron";
+import fs from "fs/promises";
 import serve from "electron-serve";
 import path, { join } from "path";
 import { spawn } from "child_process";
@@ -182,4 +183,56 @@ ipcMain.on("laurel:send-input", (_event, value: string) => {
   ) {
     pythonProcess.stdin.write(`${value}\n`);
   }
+});
+
+// Allow renderer to request an immediate stop of the running interpreter
+ipcMain.on("laurel:stop", () => {
+  if (pythonProcess) {
+    try {
+      pythonProcess.stdout?.removeAllListeners();
+      pythonProcess.stderr?.removeAllListeners();
+      pythonProcess.removeAllListeners();
+      pythonProcess.kill();
+    } catch (e) {
+      // ignore
+    }
+    pythonProcess = null;
+  }
+  // Notify renderer that we've processed the stop request
+  try {
+    win?.webContents?.send("laurel:stopped");
+  } catch (e) {
+    // ignore
+  }
+});
+
+// Open a .lrl file and return its content
+ipcMain.handle("file:open", async () => {
+  if (!win) return { canceled: true };
+  const res = await dialog.showOpenDialog(win, {
+    title: "Open Laurel file",
+    properties: ["openFile"],
+    filters: [{ name: "Laurel", extensions: ["lrl"] }],
+  });
+  if (res.canceled || !res.filePaths || res.filePaths.length === 0) return { canceled: true };
+  const filePath = res.filePaths[0];
+  const content = await fs.readFile(filePath, "utf8");
+  return { canceled: false, filePath, content };
+});
+
+// Save content to a .lrl file. If defaultPath provided it's used, otherwise ask user.
+ipcMain.handle("file:save", async (_event, { content, defaultPath }: { content: string; defaultPath?: string }) => {
+  if (!win) return { canceled: true };
+  let filePath = defaultPath;
+  if (!filePath) {
+    const res = await dialog.showSaveDialog(win, {
+      title: "Save Laurel file",
+      defaultPath: defaultPath || "untitled.lrl",
+      filters: [{ name: "Laurel", extensions: ["lrl"] }],
+    });
+    if (res.canceled || !res.filePath) return { canceled: true };
+    filePath = res.filePath;
+  }
+  await fs.writeFile(filePath, content, "utf8");
+  return { canceled: false, filePath };
 });

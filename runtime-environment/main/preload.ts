@@ -33,6 +33,9 @@ const electronApi = {
 
 const laurelApi = {
   runLaurel: (code: string) => ipcRenderer.invoke("laurel:run", code),
+  stopLaurel: () => ipcRenderer.send("laurel:stop"),
+  openFile: () => ipcRenderer.invoke("file:open"),
+  saveFile: (opts: { content: string; defaultPath?: string }) => ipcRenderer.invoke("file:save", opts),
 };
 
 contextBridge.exposeInMainWorld("electron", electronApi);
