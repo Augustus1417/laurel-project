@@ -3,6 +3,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Ensure the app root fits the viewport and avoid the default body margin which
+   can cause a page-level scrollbar when using full-height layout classes. */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
 @layer utilities {
   .drag {
     -webkit-app-region: drag;

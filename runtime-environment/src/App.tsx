@@ -81,16 +81,28 @@ export default function App() {
   };
 
   return (
-    <>
-  <Header code={code} onChangeCode={setCode} setConsoleLog={setConsoleLog} currentFilePath={currentFilePath} setCurrentFilePath={setCurrentFilePath} />
-      <div className="flex h-screen bg-gray-800 text-gray-100 font-mono overflow-hidden">
+    <div className="flex flex-col h-screen">
+      <Header
+        code={code}
+        onChangeCode={setCode}
+        setConsoleLog={setConsoleLog}
+        currentFilePath={currentFilePath}
+        setCurrentFilePath={setCurrentFilePath}
+      />
+
+      <div className="flex flex-1 bg-gray-800 text-gray-100 font-mono overflow-hidden">
         {/* Left Panel - Editor */}
         <div className="flex-[2]">
           <Editor value={code} onChange={setCode} />
         </div>
 
         {/* Center - Run Button */}
-  <RunButton onClick={handleRun} disabled={isRunning || !!inputState} onStop={handleStop} isRunning={isRunning} />
+        <RunButton
+          onClick={handleRun}
+          disabled={isRunning || !!inputState}
+          onStop={handleStop}
+          isRunning={isRunning}
+        />
 
         {/* Right Panel */}
         <div className="flex-[1.2] flex flex-col border-l border-gray-700 relative">
@@ -110,6 +122,6 @@ export default function App() {
           <ConsolePanel logs={consoleLog} />
         </div>
       </div>
-    </>
+    </div>
   );
 }
