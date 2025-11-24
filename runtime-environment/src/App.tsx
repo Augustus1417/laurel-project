@@ -48,8 +48,8 @@ export default function App() {
       setConsoleLog("Execution completed successfully");
     } catch (err: unknown) {
       setOutput("");
-      const message = err instanceof Error ? err.message : String(err);
-      setConsoleLog(`Error:\n${message}`);
+      let message = err instanceof Error ? err.message : String(err);
+      setConsoleLog(message.replace("Error invoking remote method 'laurel:run': ", ""));
     } finally {
       setIsRunning(false);
     }

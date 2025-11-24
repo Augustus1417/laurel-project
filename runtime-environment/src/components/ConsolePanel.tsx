@@ -4,7 +4,7 @@ const ConsolePanel = ({ logs }: { logs: string }) => {
       <h3 className="text-xl font-semibold text-gray-300 uppercase tracking-wide mb-2">
         Console
       </h3>
-      <pre className="text-md text-gray-100 font-mono whitespace-pre-wrap">
+      <pre className="text-lg text-gray-100 font-mono whitespace-pre-wrap">
         {logs || <span className="text-gray-600 italic">Ready</span>}
       </pre>
     </div>
