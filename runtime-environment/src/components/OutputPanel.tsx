@@ -13,6 +13,8 @@ interface OutputPanelProps {
   inputValue?: string;
   setInputValue?: (v: string) => void;
   onSubmitInput?: () => void;
+  awaitingSayOutput?: boolean;
+  onContinueSayOutput?: () => void;
 }
 
 const OutputPanel: React.FC<OutputPanelProps> = ({
@@ -23,7 +25,10 @@ const OutputPanel: React.FC<OutputPanelProps> = ({
   inputValue = "",
   setInputValue = () => {},
   onSubmitInput = () => {},
+  awaitingSayOutput = false,
+  onContinueSayOutput = () => {},
 }) => {
+  console.log("OutputPanel rendered with awaitingSayOutput:", awaitingSayOutput);
 const getCharacterSprite = () => {
   if (isError) return errorImg;
   if (awaitingInput) return inputImg;
@@ -65,6 +70,16 @@ const getCharacterSprite = () => {
               Submit
             </button>
           </form>
+        )}
+
+        {/* Continue button for say() output */}
+        {awaitingSayOutput && (
+          <button
+            onClick={onContinueSayOutput}
+            className="px-6 py-2 rounded bg-green-600 hover:bg-green-500 transition text-white font-semibold mb-4 z-30"
+          >
+            Continue
+          </button>
         )}
 
 {/* Speech bubble (hidden on error) */}

@@ -5,6 +5,10 @@ export type LaurelInputPayload = {
   prompt: string;
 };
 
+export type LaurelSayOutputPayload = {
+  output: string;
+};
+
 const electronApi = {
   getVersion: () => ipcRenderer.sendSync("app/version"),
   maximize: () => ipcRenderer.send("app/maximize"),
@@ -28,6 +32,18 @@ const electronApi = {
   },
   sendLaurelInput: (value: string) => {
     ipcRenderer.send("laurel:send-input", value);
+  },
+  onSayOutput: (callback: (payload: LaurelSayOutputPayload) => void) => {
+    const listener = (_event: IpcRendererEvent, payload: LaurelSayOutputPayload) => {
+      callback(payload);
+    };
+    ipcRenderer.on("laurel:say-output", listener);
+    return () => {
+      ipcRenderer.removeListener("laurel:say-output", listener);
+    };
+  },
+  resumeLaurel: () => {
+    ipcRenderer.send("laurel:resume");
   },
 };
 

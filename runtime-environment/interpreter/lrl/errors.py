@@ -125,7 +125,7 @@ class RTError(Error):
         pos = self.pos_start
         ctx = self.context
         while ctx:
-            result = f"  File '{pos.fn}', line {str(pos.ln + 1)}, in {ctx.display_name}\n" + result
+            result = f"  Line {str(pos.ln + 1)}, in {ctx.display_name}\n" + result
             pos = ctx.parent_entry_pos
             ctx = ctx.parent
         if result:

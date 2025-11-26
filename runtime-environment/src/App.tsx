@@ -8,6 +8,7 @@ import Editor from "./components/Editor/Editor";
 export default function App() {
   const [code, setCode] = useState("");
   const [output, setOutput] = useState("");
+  const [currentSayOutput, setCurrentSayOutput] = useState("");
   const [consoleLog, setConsoleLog] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const stopRequestedRef = useRef(false);
@@ -15,6 +16,8 @@ export default function App() {
 
   const [inputState, setInputState] = useState<{ prompt: string; type: string } | null>(null);
   const [inputValue, setInputValue] = useState("");
+
+  const [awaitingSayOutput, setAwaitingSayOutput] = useState(false);
 
   useEffect(() => {
     if (!window.electron?.onLaurelInput) return;
@@ -28,6 +31,23 @@ export default function App() {
     return unsubscribe;
   }, []);
 
+  useEffect(() => {
+    if (!window.electron?.onSayOutput) {
+      console.log("onSayOutput not available");
+      return;
+    }
+
+    console.log("Setting up onSayOutput listener");
+    const unsubscribe = window.electron.onSayOutput(({ output: sayOutput }) => {
+      console.log("Say output received:", sayOutput);
+      setCurrentSayOutput(sayOutput);
+      setAwaitingSayOutput(true);
+      setConsoleLog(`Output: ${sayOutput}`);
+    });
+
+    return unsubscribe;
+  }, []);
+
   const handleInputSubmit = () => {
     if (!inputState) return;
 
@@ -35,6 +55,12 @@ export default function App() {
     setConsoleLog(`Submitted ${inputState.type} input`);
     setInputState(null);
     setInputValue("");
+  };
+
+  const handleContinueAfterSay = () => {
+    setCurrentSayOutput("");
+    setAwaitingSayOutput(false);
+    window.electron?.resumeLaurel?.();
   };
 
   const handleRun = async () => {
@@ -99,7 +125,7 @@ export default function App() {
         {/* Center - Run Button */}
         <RunButton
           onClick={handleRun}
-          disabled={isRunning || !!inputState}
+          disabled={isRunning || !!inputState || awaitingSayOutput}
           onStop={handleStop}
           isRunning={isRunning}
         />
@@ -109,7 +135,7 @@ export default function App() {
 
           {/* Output Panel now handles input too */}
           <OutputPanel
-            output={output}
+            output={awaitingSayOutput ? currentSayOutput : output}
             awaitingInput={!!inputState}
             isRunning={isRunning}
             isError={consoleLog.startsWith("Error")}
@@ -117,6 +143,8 @@ export default function App() {
             inputValue={inputValue}
             setInputValue={setInputValue}
             onSubmitInput={handleInputSubmit}
+            awaitingSayOutput={awaitingSayOutput}
+            onContinueSayOutput={handleContinueAfterSay}
           />
 
           <ConsolePanel logs={consoleLog} />

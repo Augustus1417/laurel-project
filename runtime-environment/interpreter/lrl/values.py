@@ -375,7 +375,17 @@ class BuiltInFunction(BaseFunction):
                 break
             printed_values.append(str(val))
             index += 1
-        print(" ".join(printed_values))
+        output = " ".join(printed_values)
+        # Emit SAY_OUTPUT marker so the UI can pause execution
+        print(f"SAY_OUTPUT:{output}", flush=True)
+        
+        # Wait for a continue signal from the UI (read one line from stdin)
+        # This blocks the Python process until the user clicks Continue
+        try:
+            sys.stdin.readline()
+        except:
+            pass  # If stdin is closed, just continue
+        
         from .runtime import RTResult
         return RTResult().success(Number.null)
     execute_say.arg_names = None  # None means varargs

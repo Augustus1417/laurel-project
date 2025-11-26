@@ -13,6 +13,7 @@ if (!isDev) {
 
 const CODE_END_MARKER = "__LAUREL_END_OF_CODE__";
 const INPUT_REQUEST_PREFIX = "INPUT_REQUEST:";
+const SAY_OUTPUT_PREFIX = "SAY_OUTPUT:";
 
 let win: BrowserWindow;
 let pythonProcess: ReturnType<typeof spawn> | null = null;
@@ -120,6 +121,24 @@ ipcMain.handle("laurel:run", async (_event, code: string) => {
       }
     };
 
+    const processLine = (line: string) => {
+      if (line.startsWith(INPUT_REQUEST_PREFIX)) {
+        const payload = line.slice(INPUT_REQUEST_PREFIX.length);
+        const [type = "string", ...rest] = payload.split(":");
+        const prompt = rest.join(":");
+        _event.sender.send("laurel:input", { type, prompt });
+      } else if (line.startsWith(SAY_OUTPUT_PREFIX)) {
+        // Don't add SAY_OUTPUT to output here; it's handled by the UI
+        // Just send the event to pause execution
+        const sayOutput = line.slice(SAY_OUTPUT_PREFIX.length);
+        console.log("Sending laurel:say-output event with:", { output: sayOutput });
+        _event.sender.send("laurel:say-output", { output: sayOutput });
+      } else if (line.length > 0) {
+        // Only add non-empty lines to output
+        output += line + "\n";
+      }
+    };
+
     const stdout = pythonProcess.stdout;
     const stderr = pythonProcess.stderr;
     const stdin = pythonProcess.stdin;
@@ -138,14 +157,7 @@ ipcMain.handle("laurel:run", async (_event, code: string) => {
         stdoutBuffer = stdoutBuffer.slice(newlineIndex + 1);
         const line = rawLine.replace(/\r$/, "");
 
-        if (line.startsWith(INPUT_REQUEST_PREFIX)) {
-          const payload = line.slice(INPUT_REQUEST_PREFIX.length);
-          const [type = "string", ...rest] = payload.split(":");
-          const prompt = rest.join(":");
-          _event.sender.send("laurel:input", { type, prompt });
-        } else {
-          output += line + "\n";
-        }
+        processLine(line);
 
         newlineIndex = stdoutBuffer.indexOf("\n");
       }
@@ -182,6 +194,13 @@ ipcMain.on("laurel:send-input", (_event, value: string) => {
     !pythonProcess.stdin.destroyed
   ) {
     pythonProcess.stdin.write(`${value}\n`);
+  }
+});
+
+ipcMain.on("laurel:resume", () => {
+  if (pythonProcess && pythonProcess.stdin && !pythonProcess.stdin.destroyed) {
+    console.log("Sending resume signal to Python process");
+    pythonProcess.stdin.write("\n");
   }
 });
 
