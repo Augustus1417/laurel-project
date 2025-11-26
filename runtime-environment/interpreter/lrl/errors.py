@@ -101,7 +101,32 @@ class InvalidSyntaxError(Error):
         super().__init__(pos_start, pos_end, 'Invalid Syntax', details)
 
     def hint(self):
-        return "The code around the highlighted area doesn't match the expected syntax. Look for missing operators, extra tokens, or unmatched delimiters."
+        # Provide a contextual, actionable hint when possible.
+        d = (self.details or "").lower()
+        # Common pattern: parser reports Expected ...
+        if 'expected' in d:
+            # Detect incomplete assignment like `a =` (identifier or value expected)
+            if 'identifier' in d or 'int' in d or 'float' in d or '+' in d or '-' in d or '(' in d or '[' in d:
+                return (
+                    "It looks like an expression or value was expected here (for example after `=`). "
+                    "If you started an assignment like `a =`, provide a value or expression on the right-hand side."
+                )
+            if 'if' in d or 'for' in d or 'while' in d:
+                return (
+                    "A statement (like an `if`, `for`, or `while`) was expected here. "
+                    "Make sure you haven't accidentally left a line blank or omitted required keywords."
+                )
+            if 'fun' in d:
+                return (
+                    "A function declaration was expected here. If you intended to declare a function, use the `fun` keyword and provide a name and parameter list, e.g. `fun myFunc(x)`."
+                )
+            # Generic fallback for Expected lists
+            # Try to shorten the details to a human-friendly fragment
+            cleaned = self.details.replace('Expected', '').strip(': ').strip()
+            return f"Expected one of: {cleaned}. Check for missing operators or incomplete expressions."
+
+        # Generic hint if we can't infer specifics
+        return "The code here doesn't match the expected syntax. Check for missing operators, incomplete assignments (like `a =`), unmatched parentheses, or extra tokens."
 
 class RTError(Error):
     def __init__(self, pos_start, pos_end, details, context):
@@ -121,17 +146,30 @@ class RTError(Error):
         return result
 
     def generate_traceback(self):
-        result = ''
+        # Build a list of frames (line number, context name).
+        frames = []
         pos = self.pos_start
         ctx = self.context
         while ctx:
-            result = f"  Line {str(pos.ln + 1)}, in {ctx.display_name}\n" + result
+            frames.append((pos.ln + 1, ctx.display_name))
             pos = ctx.parent_entry_pos
             ctx = ctx.parent
-        if result:
-            return 'Call stack (most recent call last):\n' + result
-        else:
+
+        if not frames:
             return ''
+
+        # If the only frame is the top-level program frame, omit the trace to
+        # avoid showing an unfamiliar call stack header to beginners.
+        if len(frames) == 1 and frames[0][1] == '<program>':
+            return ''
+
+        # Otherwise produce a short, beginner-friendly header and list frames.
+        result_lines = []
+        # Show frames in the same order as before (most recent last).
+        for ln, name in reversed(frames):
+            result_lines.append(f"  Line {ln}, in {name}\n")
+
+        return 'Execution trace:\n' + ''.join(result_lines)
 
     def hint(self):
         return 'A runtime error occurred during execution. Check the highlighted code so you can assess where you went wrong.'
